@@ -8,7 +8,7 @@ public class Searcher {
     private char getCharAt(int data_index,int string_index){
         String str=data.get(data_index).getName();
         if(str.length()-1<string_index)return '\0';
-        return Character.toUpperCase(data.get(data_index).getName().charAt(string_index));
+        return Character.toLowerCase(data.get(data_index).getName().charAt(string_index));
     }
     private int lower_bound(int begin,int end,int ind) {
         int lb=begin;
@@ -49,17 +49,15 @@ public class Searcher {
         return -1;
     }
     public int[] search(ArrayList<Contact> data, String key){
-        key=key.toUpperCase();
+        key=key.toLowerCase();
         this.data=data;
         this.key=key;
         int begin=0;
         int end=data.size()-1;
         for(int i=0;i<key.length();i++){
             begin=lower_bound(begin,end,i);
-            System.out.println("__________________begin = "+begin);
             if(begin==-1)return null;
             end=upper_bound(begin,end,i);
-            System.out.println("__________________end = "+end);
             if(end==-1) return null;
         }
         return new int[]{begin,end};
