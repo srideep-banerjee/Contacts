@@ -27,7 +27,8 @@ public class DetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         Intent i=getIntent();
-        c=new Contact(i.getStringExtra("name"),i.getStringExtra("number"),i.getStringExtra("uri"),i.getStringExtra("cid"));
+        c=new Contact(i.getStringExtra("name"),i.getStringExtra("number"),
+                i.getStringExtra("uri"),i.getStringExtra("cid"));
         TextView name=findViewById(R.id.name);
         name.setText(c.getName());
         TextView number=findViewById(R.id.number);
