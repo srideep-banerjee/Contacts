@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E0F4F0"
+    android:background="?attr/colorOnPrimary"
     tools:context=".DetailsActivity">
 
     <androidx.cardview.widget.CardView
@@ -43,10 +43,10 @@
         android:layout_height="30dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
-        app:tint="#02299F"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="?attr/actionModeCloseDrawable" />
+        app:srcCompat="?attr/actionModeCloseDrawable"
+        app:tint="#02299F" />
 
     <TextView
         android:id="@+id/edit"
@@ -55,7 +55,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:text="Edit"
-        android:textColor="#02299F"
+        android:textColor="?attr/colorPrimaryVariant"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -107,7 +107,7 @@
             android:layout_height="match_parent"
             android:background="#02299F"
             android:padding="5dp"
-            app:tint="#FFFFFF"
-            app:srcCompat="?attr/actionModeCopyDrawable" />
+            app:srcCompat="?attr/actionModeCopyDrawable"
+            app:tint="#FFFFFF" />
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
