@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E0F4F0"
+    android:background="@color/background"
     tools:context=".DetailsActivity">
 
     <androidx.cardview.widget.CardView
@@ -30,7 +30,7 @@
         android:layout_marginTop="20dp"
         android:gravity="center_horizontal"
         android:text="TextView"
-        android:textColor="#000000"
+        android:textColor="@color/background_complement"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -43,10 +43,10 @@
         android:layout_height="30dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
-        app:tint="#02299F"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="?attr/actionModeCloseDrawable" />
+        app:srcCompat="?attr/actionModeCloseDrawable"
+        app:tint="@color/primary_blue" />
 
     <TextView
         android:id="@+id/edit"
@@ -55,7 +55,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:text="Edit"
-        android:textColor="#02299F"
+        android:textColor="@color/primary_blue"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -66,7 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:text="+0123456789"
-        android:textColor="#000000"
+        android:textColor="@color/background_complement"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -86,9 +86,10 @@
             android:id="@+id/call"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#02299F"
+            android:background="@color/primary_blue"
             android:padding="5dp"
-            app:srcCompat="@android:drawable/stat_sys_phone_call" />
+            app:srcCompat="@android:drawable/stat_sys_phone_call"
+            app:tint="@color/background" />
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
@@ -105,9 +106,9 @@
             android:id="@+id/copy"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#02299F"
+            android:background="@color/primary_blue"
             android:padding="5dp"
-            app:tint="#FFFFFF"
-            app:srcCompat="?attr/actionModeCopyDrawable" />
+            app:srcCompat="?attr/actionModeCopyDrawable"
+            app:tint="@color/background" />
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

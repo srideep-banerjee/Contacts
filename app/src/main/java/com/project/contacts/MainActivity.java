@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         searchView=findViewById(R.id.searchView);
         recyclerView=findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        contactsAdapter=new ContactsAdapter(new ArrayList<Contact>());
+        contactsAdapter=new ContactsAdapter(new ArrayList<Contact>(),this.getApplicationContext());
         recyclerView.setAdapter(contactsAdapter);
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED)
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_CONTACTS}, 10);

@@ -4,8 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#02299F"
+    android:background="@color/primary_blue"
     tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/recyclerView">
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton"
@@ -14,13 +25,15 @@
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="32dp"
         android:clickable="true"
-        app:backgroundTint="#FFFFFF"
+        app:backgroundTint="@color/primary_blue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/background"
         app:srcCompat="@android:drawable/ic_input_add" />
 
     <android.widget.SearchView
         android:id="@+id/searchView"
+        style="@android:style/Widget.Material.SearchView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
@@ -50,9 +63,10 @@
         android:id="@+id/MsgBox"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#E0F4F0"
+        android:background="@color/background"
         android:gravity="center_horizontal|center_vertical"
         android:text="Loading..."
+        android:textColor="@color/background_complement_variant"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/recyclerView"
