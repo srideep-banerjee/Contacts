@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="status_color">@color/primary_blue</color>
     <color name="primary_blue">#FF0057DE</color>
     <color name="background">#FFFFFFFF</color>
     <color name="background_variant">#FFE6E6E6</color>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_blue"
+    android:background="@color/status_color"
     tools:context=".MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -28,8 +28,8 @@
         app:backgroundTint="@color/primary_blue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@color/background"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:tint="@color/background" />
 
     <android.widget.SearchView
         android:id="@+id/searchView"
@@ -40,10 +40,11 @@
         android:layout_marginTop="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="12dp"
-        android:background="#FFFFFF"
+        android:background="@color/background"
         android:iconifiedByDefault="false"
         android:queryHint='Search Contacts'
         android:saveEnabled="false"
+        android:queryBackground="@android:color/transparent"
         app:layout_constraintBottom_toTopOf="@+id/recyclerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
