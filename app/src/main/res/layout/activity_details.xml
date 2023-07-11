@@ -20,7 +20,10 @@
             android:id="@+id/pfp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:srcCompat="@drawable/profpp" />
+            android:background="@color/background_variant"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/profile_picture" />
     </androidx.cardview.widget.CardView>
 
     <TextView
