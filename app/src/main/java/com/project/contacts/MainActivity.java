@@ -52,10 +52,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         contactsAdapter=new ContactsAdapter(new ArrayList<Contact>(),this.getApplicationContext());
         recyclerView.setAdapter(contactsAdapter);
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED)
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_CONTACTS}, 10);
-        else
-            loadContacts();
         recyclerView.addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -65,37 +61,6 @@ public class MainActivity extends AppCompatActivity {
                     InputMethodManager imm=(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(view.getWindowToken(),0);
                 }
-            }
-        });
-        final int[] lastMotionEvent = {Integer.MAX_VALUE};
-        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-                if(!(e.getAction()==MotionEvent.ACTION_UP && lastMotionEvent[0]==MotionEvent.ACTION_DOWN)){
-                    lastMotionEvent[0]=e.getAction();
-                    return false;
-                }
-                lastMotionEvent[0]=e.getAction();
-                View v=rv.findChildViewUnder(e.getX(),e.getY());
-                if(v==null) return false;
-                TextView tv=v.findViewById(R.id.array_position);
-                Intent i=new Intent(getApplicationContext(),DetailsActivity.class);
-                Contact c=contactsAdapter.contact_data.get(Integer.parseInt(tv.getText().toString()));
-                i.putExtra("name",c.getName());
-                i.putExtra("number",c.getPh_no());
-                i.putExtra("uri",c.getPfp_uri());
-                i.putExtra("cid",c.getContact_id());
-                startActivity(i);
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
             }
         });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
@@ -133,6 +98,10 @@ public class MainActivity extends AppCompatActivity {
         contactsAdapter.changeData(allContacts.subList(bounds[0],bounds[1]+1));
     }
     public void loadContacts(){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED){
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_CONTACTS}, 10);
+            return;
+        }
         msgBox.setVisibility(View.VISIBLE);
         searchView.setEnabled(false);
         recyclerView.setVisibility(View.INVISIBLE);
