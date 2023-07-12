@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
         ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
@@ -77,37 +78,6 @@ public class MainActivity extends AppCompatActivity {
                         search(s);
                     }
                 });
-        final int[] lastMotionEvent = {Integer.MAX_VALUE};
-        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-                if (!(e.getAction() == MotionEvent.ACTION_UP && lastMotionEvent[0] == MotionEvent.ACTION_DOWN)) {
-                    lastMotionEvent[0] = e.getAction();
-                    return false;
-                }
-                lastMotionEvent[0] = e.getAction();
-                View v = rv.findChildViewUnder(e.getX(), e.getY());
-                if (v == null) return false;
-                TextView tv = v.findViewById(R.id.array_position);
-                Intent i = new Intent(getApplicationContext(), DetailsActivity.class);
-                Contact c = contactsAdapter.contact_data.get(Integer.parseInt(tv.getText().toString()));
-                i.putExtra("name", c.getName());
-                i.putExtra("number", c.getPh_no());
-                i.putExtra("uri", c.getPfp_uri());
-                i.putExtra("cid", c.getContact_id());
-                activityResultLauncher.launch(i);
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-            }
-        });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override

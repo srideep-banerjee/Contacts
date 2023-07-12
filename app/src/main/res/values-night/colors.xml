@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="status_color">@color/background_variant</color>
+    <color name="primary_blue">#FF0086FF</color>
+    <color name="background">#FF000000</color>
+    <color name="background_variant">#FF2B2B2B</color>
+    <color name="background_complement">#FFFFFFFF</color>
+    <color name="background_complement_variant">#A0FFFFFF</color>
+</resources>

@@ -28,8 +28,6 @@ import androidx.core.content.ContextCompat;
 public class DetailsActivity extends AppCompatActivity {
 
     Contact c;
-    TextView name;
-    TextView number;
     ActivityResultLauncher<Intent> activityResultLauncher;
 
     @Override
@@ -39,12 +37,13 @@ public class DetailsActivity extends AppCompatActivity {
         Intent i = getIntent();
         c = new Contact(i.getStringExtra("name"), i.getStringExtra("number"),
                 i.getStringExtra("uri"), i.getStringExtra("cid"));
-        name = findViewById(R.id.name);
+        TextView name = findViewById(R.id.name);
         name.setText(c.getName());
-        number = findViewById(R.id.number);
+        TextView number = findViewById(R.id.number);
         number.setText(c.getPh_no());
         if (c.getPfp_uri() != null) {
             ImageView pfp = findViewById(R.id.pfp);
+            pfp.setPadding(0, 0, 0, 0);
             pfp.setImageURI(Uri.parse(c.getPfp_uri()));
         }
         ImageView back = findViewById(R.id.back);
