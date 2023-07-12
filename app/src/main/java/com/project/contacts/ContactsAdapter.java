@@ -18,12 +18,12 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
 
     List<Contact> contact_data;
     int padding;
-    Context context;
+    MainActivity activity;
 
-    public ContactsAdapter(List<Contact> contact_data, Context context) {
+    public ContactsAdapter(List<Contact> contact_data, MainActivity activity) {
         this.contact_data = contact_data;
-        padding = (int) (12 * context.getResources().getDisplayMetrics().density);
-        this.context = context;
+        padding = (int) (12 * activity.getResources().getDisplayMetrics().density);
+        this.activity = activity;
     }
 
     public void changeData(List<Contact> contact_data) {
@@ -37,14 +37,13 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.contact_item, parent, false);
         view.setOnClickListener((View v) -> {
             TextView tv = v.findViewById(R.id.array_position);
-            Intent i = new Intent(context, DetailsActivity.class);
+            Intent i = new Intent(activity, DetailsActivity.class);
             Contact c = contact_data.get(Integer.parseInt(tv.getText().toString()));
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             i.putExtra("name", c.getName());
             i.putExtra("number", c.getPh_no());
             i.putExtra("uri", c.getPfp_uri());
             i.putExtra("cid", c.getContact_id());
-            context.startActivity(i);
+            activity.launchDetailsActivityForResult(i);
         });
         return new ViewHolder(view);
     }

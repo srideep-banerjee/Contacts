@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ContactsAdapter contactsAdapter;
     ArrayList<Contact> allContacts;
+    ActivityResultLauncher<Intent> activityResultLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         searchView = findViewById(R.id.searchView);
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        contactsAdapter = new ContactsAdapter(new ArrayList<>());
+        contactsAdapter = new ContactsAdapter(new ArrayList<>(),this);
         recyclerView.setAdapter(contactsAdapter);
         loadContacts();
         recyclerView.addOnScrollListener(new OnScrollListener() {
@@ -68,15 +69,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+        activityResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        String s = searchView.getQuery().toString();
-                        loadContacts();
-                        search(s);
-                    }
+                result -> {
+                    String s = searchView.getQuery().toString();
+                    loadContacts();
+                    search(s);
                 });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -104,17 +102,7 @@ public class MainActivity extends AppCompatActivity {
             this.finish();
     }
 
-    private void launchDetailsActivityForResult(Intent i) {
-        ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        String s = searchView.getQuery().toString();
-                        loadContacts();
-                        search(s);
-                    }
-                });
+    public void launchDetailsActivityForResult(Intent i) {
         activityResultLauncher.launch(i);
     }
 
