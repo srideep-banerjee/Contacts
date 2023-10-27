@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void search(String key) {
         if (allContacts == null) return;
-        int[] bounds = new Searcher().search(allContacts, key);
+        int[] bounds = new Searcher(allContacts).search(key);
         if (bounds == null) {
             msgBox.setText("No Search Results !");
             msgBox.setVisibility(View.VISIBLE);

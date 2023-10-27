@@ -5,11 +5,17 @@ import java.util.ArrayList;
 public class Searcher {
     private ArrayList<Contact> data;
     private String key;
+
+    public Searcher(ArrayList<Contact> data) {
+        this.data = data;
+    }
+
     private char getCharAt(int data_index,int string_index){
         String str=data.get(data_index).getName();
         if(str.length()-1<string_index)return '\0';
         return Character.toLowerCase(data.get(data_index).getName().charAt(string_index));
     }
+
     private int lower_bound(int begin,int end,int ind) {
         int lb=begin;
         int ub=end;
@@ -29,6 +35,7 @@ public class Searcher {
         }
         return -1;
     }
+
     private int upper_bound(int begin,int end,int ind) {
         int lb=begin;
         int ub=end;
@@ -48,7 +55,7 @@ public class Searcher {
         }
         return -1;
     }
-    public int[] search(ArrayList<Contact> data, String key){
+    public int[] search(String key){
         key=key.toLowerCase();
         this.data=data;
         this.key=key;
