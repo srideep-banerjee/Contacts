@@ -1,13 +1,11 @@
 package com.project.contacts;
 
-import android.graphics.Bitmap;
-
 public class Contact {
 
-    private String name="";
-    private String ph_no="1234567890";
-    private String pfp_uri=null;
-    private String contact_id=null;
+    private final String name;
+    private final String ph_no;
+    private final String pfp_uri;
+    private final String contact_id;
 
     public String getName() {
         return name;
