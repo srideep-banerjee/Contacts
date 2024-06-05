@@ -1,6 +1,8 @@
 package com.project.contacts;
 
 import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -93,10 +96,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode != 10) return;
-        if (permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        if (permissions.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED)
             loadContacts();
         else
             this.finish();
@@ -119,29 +124,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadContacts() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_CONTACTS}, 10);
+        if (
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_DENIED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS)
+                == PackageManager.PERMISSION_DENIED
+        ) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_CONTACTS, Manifest.permission.GET_ACCOUNTS}, 10);
             return;
         }
+        final AccountManager accountManager = AccountManager.get(this);
         msgBox.setVisibility(View.VISIBLE);
         searchView.setEnabled(false);
         recyclerView.setVisibility(View.INVISIBLE);
         new Thread() {
             @Override
             public void run() {
+                String selection = null;
+                Account[] accounts = accountManager.getAccounts();
+                if (accounts.length != 0) {
+                    StringBuilder selectionBuilder = new StringBuilder();
+                    selectionBuilder
+                            .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET)
+                            .append("!='")
+                            .append(accounts[0].type)
+                            .append("'");
+                    for (int i = 1; i < accounts.length; i++) {
+                        selectionBuilder
+                                .append(" AND ")
+                                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET)
+                                .append("!='")
+                                .append(accounts[i].type)
+                                .append("'");
+                    }
+                    selection = selectionBuilder.toString();
+                }
                 Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        null, null, null,
+                        null, selection, null,
                         ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC");
                 ArrayList<Contact> contact_data = new ArrayList();
-                String last_contact_name = "";
                 while (cursor.moveToNext()) {
                     @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                     @SuppressLint("Range") String num = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                     @SuppressLint("Range") String pfp_uri = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
                     @SuppressLint("Range") String contact_id = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
-                    if (!(name.equals(last_contact_name)))
-                        contact_data.add(new Contact(name, num, pfp_uri, contact_id));
-                    last_contact_name = name;
+                    contact_data.add(new Contact(name, num, pfp_uri, contact_id));
                 }
                 cursor.close();
                 allContacts = contact_data;
