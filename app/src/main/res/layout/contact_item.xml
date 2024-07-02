@@ -13,9 +13,7 @@
         android:layout_gravity="center"
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"
         card_view:cardCornerRadius="60dp"
-        card_view:layout_constraintBottom_toBottomOf="parent"
         card_view:layout_constraintStart_toStartOf="parent"
         card_view:layout_constraintTop_toTopOf="parent">
 
@@ -34,6 +32,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="12dp"
         android:text="Abcd Efgh"
         android:textColor="@color/background_complement"
@@ -49,7 +48,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
         android:text="9876543210"
         android:textColor="@color/background_complement_variant"
         android:textSize="18sp"
