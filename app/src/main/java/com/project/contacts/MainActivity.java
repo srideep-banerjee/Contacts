@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
@@ -105,20 +106,24 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra("finishActivityOnSaveCompleted", true);
             startActivity(i);
         });
-//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//
-//            @Override
-//            public boolean onQueryTextSubmit(String s) {
-//                searchView.clearFocus();
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextChange(String s) {
-//                search(s);
-//                return false;
-//            }
-//        });
+        final TextChangeDelayedExecutor delayedExecutor = new TextChangeDelayedExecutor("", (text) -> {
+            Log.d("CONTACT_LOGS", "Changed text is " + text);
+        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                //searchView.clearFocus();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                //search(s);
+                delayedExecutor.update(s);
+                return false;
+            }
+        });
     }
 
     public void initializeViews() {
