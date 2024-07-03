@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
@@ -31,7 +30,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -43,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ArrayList<Contact> allContacts;
     ActivityResultLauncher<Intent> activityResultLauncher;
-    ContactViewModel viewModel;
+    ContactViewModel contactViewModel;
+    ContactAdapter contactAdapter;
     CompositeDisposable compositeDisposable;
 
     @Override
@@ -53,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
 
         initializeViews();
 
-        viewModel = new ViewModelProvider(this).get(ContactViewModel.class);
-        ContactAdapter contactAdapter = new ContactAdapter(new ContactComparator(), (contact)-> {
+        contactViewModel = new ViewModelProvider(this).get(ContactViewModel.class);
+        contactAdapter = new ContactAdapter(new ContactComparator(), (contact)-> {
             Intent i = new Intent(this, DetailsActivity.class);
             i.putExtra("name", contact.getName());
             i.putExtra("number", contact.getPh_no());
@@ -67,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         compositeDisposable = new CompositeDisposable();
 
-        Disposable singleDisposable = viewModel
+        Disposable singleDisposable = contactViewModel
                 .getContactPageDataFlowable()
                 .observeOn(Schedulers.computation())
                 .subscribe((pagingDataFlowable)->{
@@ -78,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
                     compositeDisposable.add(flowableDisposable);
                 });
         compositeDisposable.add(singleDisposable);
-        //loadContacts();
         recyclerView.addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -95,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     String s = searchView.getQuery().toString();
-                    loadContacts();
+                    //loadContacts();
                     search(s);
                 });
 
@@ -106,9 +104,10 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra("finishActivityOnSaveCompleted", true);
             startActivity(i);
         });
-        final TextChangeDelayedExecutor delayedExecutor = new TextChangeDelayedExecutor("", (text) -> {
-            Log.d("CONTACT_LOGS", "Changed text is " + text);
-        });
+        final TextChangeDelayedExecutor delayedExecutor = new TextChangeDelayedExecutor(
+                "",
+                this::search
+        );
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
@@ -150,14 +149,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void search(String key) {
-        if (allContacts == null) return;
-        int[] bounds = new Searcher(allContacts).search(key);
-        if (bounds == null) {
-            msgBox.setText("No Search Results !");
-            msgBox.setVisibility(View.VISIBLE);
-            return;
-        } else if (msgBox.getVisibility() == View.VISIBLE)
-            msgBox.setVisibility(View.INVISIBLE);
+        contactViewModel.setSearchText(key);
+        contactAdapter.refresh();
     }
 
     public void loadContacts() {

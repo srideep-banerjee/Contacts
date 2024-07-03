@@ -1,6 +1,5 @@
 package com.project.contacts;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +9,7 @@ import androidx.paging.PagingDataAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 
 public class ContactAdapter extends PagingDataAdapter<Contact, ContactViewHolder> {
-    final OnContactClick onContactClick;
+    private final OnContactClick onContactClick;
 
     public ContactAdapter(@NonNull DiffUtil.ItemCallback<Contact> diffCallback, OnContactClick onContactClick) {
         super(diffCallback);

@@ -6,19 +6,15 @@ import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.util.Log;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleEmitter;
-import io.reactivex.rxjava3.core.SingleOnSubscribe;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ContactRepository {
     private final ContentResolver contentResolver;
     private final String externalContactSelection;
+    private String searchText = "";
 
     public ContactRepository(ContentResolver contentResolver, String externalContactSelection) {
         this.contentResolver = contentResolver;
@@ -29,14 +25,20 @@ public class ContactRepository {
     public Single<List<Contact>> loadData(int pageNumber, int pageLength) {
         Log.d("CONTACTS_LOGS","Loading page -> {Page Number: " + pageNumber + ", Page Length: " + pageLength + "}");
         return Single.create(emitter -> {
-            int offset = pageNumber * pageLength;
-            String selection = externalContactSelection;
+            int offset = pageNumber * PagingConstants.pageSize;
+            String selection = externalContactSelection + " AND " +ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME+ " LIKE ?";
+            String searchQuery = searchText + "%";
             ArrayList<Contact> contact_data = new ArrayList<>();
             try (Cursor cursor = contentResolver.query(
                     ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI, ContactsContract.CommonDataKinds.Phone.CONTACT_ID},
+                    new String[]{
+                            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                            ContactsContract.CommonDataKinds.Phone.NUMBER,
+                            ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID
+                    },
                     selection,
-                    null,
+                    new String[]{ searchQuery },
                     ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC" + " LIMIT " + pageLength + " OFFSET " + offset
             )) {
                 if (cursor == null) {
@@ -50,8 +52,15 @@ public class ContactRepository {
                     @SuppressLint("Range") String contact_id = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
                     contact_data.add(new Contact(name, num, pfp_uri, contact_id));
                 }
+            } catch (Exception e) {
+                Log.e("CONTACT_ERROR", e.toString());
             }
+            Log.d("CONTACTS_LOGS","Record count = " + contact_data.size());
             emitter.onSuccess(contact_data);
         });
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 }
