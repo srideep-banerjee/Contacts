@@ -10,20 +10,18 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
@@ -31,35 +29,55 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView msgBox;
     SearchView searchView;
     RecyclerView recyclerView;
-    ContactsAdapter contactsAdapter;
     ArrayList<Contact> allContacts;
     ActivityResultLauncher<Intent> activityResultLauncher;
+    ContactViewModel viewModel;
+    CompositeDisposable compositeDisposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
-        fab.setOnClickListener((View v) -> {
-            Intent i = new Intent(Intent.ACTION_INSERT);
-            i.setType(ContactsContract.Contacts.CONTENT_TYPE);
-            i.putExtra("finishActivityOnSaveCompleted", true);
-            startActivity(i);
+
+        initializeViews();
+
+        viewModel = new ViewModelProvider(this).get(ContactViewModel.class);
+        ContactAdapter contactAdapter = new ContactAdapter(new ContactComparator(), (contact)-> {
+            Intent i = new Intent(this, DetailsActivity.class);
+            i.putExtra("name", contact.getName());
+            i.putExtra("number", contact.getPh_no());
+            i.putExtra("uri", contact.getPfp_uri());
+            i.putExtra("cid", contact.getContact_id());
+            launchDetailsActivityForResult(i);
         });
-        msgBox = findViewById(R.id.MsgBox);
-        searchView = findViewById(R.id.searchView);
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        contactsAdapter = new ContactsAdapter(new ArrayList<>(),this);
-        recyclerView.setAdapter(contactsAdapter);
-        loadContacts();
+
+        recyclerView.setAdapter(contactAdapter);
+
+        compositeDisposable = new CompositeDisposable();
+
+        Disposable singleDisposable = viewModel
+                .getContactPageDataFlowable()
+                .observeOn(Schedulers.computation())
+                .subscribe((pagingDataFlowable)->{
+                    Disposable flowableDisposable = pagingDataFlowable
+                            .subscribe((pagingData) -> {
+                                contactAdapter.submitData(this.getLifecycle(), pagingData);
+                            });
+                    compositeDisposable.add(flowableDisposable);
+                });
+        compositeDisposable.add(singleDisposable);
+        //loadContacts();
         recyclerView.addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -79,20 +97,35 @@ public class MainActivity extends AppCompatActivity {
                     loadContacts();
                     search(s);
                 });
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
-            @Override
-            public boolean onQueryTextSubmit(String s) {
-                searchView.clearFocus();
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String s) {
-                search(s);
-                return false;
-            }
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        fab.setOnClickListener((View v) -> {
+            Intent i = new Intent(Intent.ACTION_INSERT);
+            i.setType(ContactsContract.Contacts.CONTENT_TYPE);
+            i.putExtra("finishActivityOnSaveCompleted", true);
+            startActivity(i);
         });
+//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//
+//            @Override
+//            public boolean onQueryTextSubmit(String s) {
+//                searchView.clearFocus();
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextChange(String s) {
+//                search(s);
+//                return false;
+//            }
+//        });
+    }
+
+    public void initializeViews() {
+        msgBox = findViewById(R.id.MsgBox);
+        searchView = findViewById(R.id.searchView);
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     @Override
@@ -120,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         } else if (msgBox.getVisibility() == View.VISIBLE)
             msgBox.setVisibility(View.INVISIBLE);
-        contactsAdapter.changeData(allContacts.subList(bounds[0], bounds[1] + 1));
     }
 
     public void loadContacts() {
@@ -173,7 +205,6 @@ public class MainActivity extends AppCompatActivity {
                 cursor.close();
                 allContacts = contact_data;
                 runOnUiThread(() -> {
-                    contactsAdapter.changeData(contact_data);
                     msgBox.setVisibility(View.INVISIBLE);
                     searchView.setEnabled(true);
                     recyclerView.setVisibility(View.VISIBLE);
@@ -181,5 +212,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }.start();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        compositeDisposable.dispose();
+        super.onDestroy();
     }
 }
