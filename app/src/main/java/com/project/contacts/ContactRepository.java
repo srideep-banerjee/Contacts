@@ -14,7 +14,6 @@ import io.reactivex.rxjava3.core.Single;
 public class ContactRepository {
     private final ContentResolver contentResolver;
     private final String externalContactSelection;
-    private String searchText = "";
 
     public ContactRepository(ContentResolver contentResolver, String externalContactSelection) {
         this.contentResolver = contentResolver;
@@ -22,7 +21,7 @@ public class ContactRepository {
         this.externalContactSelection = externalContactSelection;
     }
 
-    public Single<List<Contact>> loadData(int pageNumber, int pageLength) {
+    public Single<List<Contact>> loadData(int pageNumber, int pageLength, String searchText) {
         Log.d("CONTACTS_LOGS","Loading page -> {Page Number: " + pageNumber + ", Page Length: " + pageLength + "}");
         return Single.create(emitter -> {
             int offset = pageNumber * PagingConstants.pageSize;
@@ -58,9 +57,5 @@ public class ContactRepository {
             Log.d("CONTACTS_LOGS","Record count = " + contact_data.size());
             emitter.onSuccess(contact_data);
         });
-    }
-
-    public void setSearchText(String searchText) {
-        this.searchText = searchText;
     }
 }

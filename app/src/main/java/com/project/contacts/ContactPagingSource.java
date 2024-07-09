@@ -14,9 +14,11 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ContactPagingSource extends RxPagingSource<Integer, Contact> {
     private final ContactRepository repository;
+    private final String searchQuery;
 
-    ContactPagingSource(ContactRepository repository) {
+    ContactPagingSource(ContactRepository repository, String searchQuery) {
         this.repository = repository;
+        this.searchQuery = searchQuery;
     }
 
     @Nullable
@@ -57,14 +59,16 @@ public class ContactPagingSource extends RxPagingSource<Integer, Contact> {
         final int nextKey = pageNumber + loadParams.getLoadSize() / PagingConstants.pageSize;
         final int prevKey = pageNumber - 1;
         Log.d("CONTACTS_LOGS", "Loading page: " + pageNumber);
-        Single<List<Contact>> single = repository.loadData(pageNumber, loadParams.getLoadSize());
+        Single<List<Contact>> single = repository.loadData(pageNumber, loadParams.getLoadSize(), searchQuery);
 
         Single<LoadResult<Integer, Contact>> mappedSingle =  single
                 .subscribeOn(Schedulers.io())
                 .map(data -> new LoadResult.Page<>(
                         data,
                         pageNumber == 0 ? null : prevKey,
-                        data.isEmpty() ? null : nextKey
+                        data.isEmpty() ? null : nextKey,
+                        pageNumber * PagingConstants.pageSize,
+                        LoadResult.Page.COUNT_UNDEFINED
                 ));
         return mappedSingle.onErrorReturn(LoadResult.Error::new);
     }

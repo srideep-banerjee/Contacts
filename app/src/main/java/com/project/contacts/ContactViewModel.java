@@ -16,16 +16,17 @@ import androidx.paging.rxjava3.PagingRx;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import kotlin.OptIn;
 import kotlinx.coroutines.CoroutineScope;
 
 public class ContactViewModel extends AndroidViewModel {
 
     private final Single<ContactRepository> contactRepositorySingle;
-    private Disposable contactRepositorySubscription;
     private final Single<Flowable<PagingData<Contact>>> contactPagingDataFlowable;
+    private String searchText = "";
 
+    @OptIn(markerClass = kotlinx.coroutines.ExperimentalCoroutinesApi.class)
     public ContactViewModel(@NonNull Application application) {
         super(application);
 
@@ -41,8 +42,14 @@ public class ContactViewModel extends AndroidViewModel {
             ContactRepository repository = contactRepositorySingle.blockingGet();
             CoroutineScope viewModelScope = ViewModelKt.getViewModelScope(this);
             Pager<Integer, Contact> pager = new Pager<>(
-                    new PagingConfig(PagingConstants.pageSize, 20, true, 30, 50),
-                    ()-> new ContactPagingSource(repository)
+                    new PagingConfig(
+                            PagingConstants.pageSize,
+                            20,
+                            true,
+                            30,
+                            50
+                    ),
+                    ()-> new ContactPagingSource(repository, searchText)
             );
             Flowable<PagingData<Contact>> flowable = PagingRx.getFlowable(pager);
             PagingRx.cachedIn(flowable, viewModelScope);
@@ -55,11 +62,7 @@ public class ContactViewModel extends AndroidViewModel {
     }
 
     public void setSearchText(String text) {
-        if (contactRepositorySubscription != null && !contactRepositorySubscription.isDisposed()) {
-            contactRepositorySubscription.dispose();
-        }
-        contactRepositorySubscription = contactRepositorySingle
-                .subscribe((emitter) -> emitter.setSearchText(text));
+        searchText = text;
     }
 
     private ContentResolver contentResolver() {

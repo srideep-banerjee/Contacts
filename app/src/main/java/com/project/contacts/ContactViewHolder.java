@@ -1,6 +1,5 @@
 package com.project.contacts;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
 import android.widget.ImageView;
@@ -32,8 +31,8 @@ public class ContactViewHolder extends RecyclerView.ViewHolder {
 
     public void bind(Contact contact) {
         currentContact = contact;
-        contact_name.setText(contact != null? contact.getName() : "Placeholder");
-        contact_number.setText(contact != null? contact.getPh_no() : "Placeholder");
+        contact_name.setText(contact != null? contact.getName() : "Loading ...");
+        contact_number.setText(contact != null? contact.getPh_no() : "");
         if (contact != null && contact.getPfp_uri() != null) {
             contact_pfp.setPadding(0, 0, 0, 0);
             contact_pfp.setImageURI(Uri.parse(contact.getPfp_uri()));
