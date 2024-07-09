@@ -1,19 +1,14 @@
 package com.project.contacts;
 
 import android.Manifest;
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
-import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -28,18 +23,14 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.ArrayList;
-
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView msgBox;
     SearchView searchView;
     RecyclerView recyclerView;
-    ArrayList<Contact> allContacts;
     ActivityResultLauncher<Intent> activityResultLauncher;
     ContactViewModel contactViewModel;
     ContactAdapter contactAdapter;
@@ -66,17 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
         compositeDisposable = new CompositeDisposable();
 
-        Disposable singleDisposable = contactViewModel
-                .getContactPageDataFlowable()
-                .observeOn(Schedulers.computation())
-                .subscribe((pagingDataFlowable)->{
-                    Disposable flowableDisposable = pagingDataFlowable
-                            .subscribe((pagingData) -> {
-                                contactAdapter.submitData(this.getLifecycle(), pagingData);
-                            });
-                    compositeDisposable.add(flowableDisposable);
-                });
-        compositeDisposable.add(singleDisposable);
+        if (hasNecessaryPermissions()) initPaging();
+        else requestNecessaryPermissions();
+
         recyclerView.addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -112,21 +95,43 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextSubmit(String s) {
-                //searchView.clearFocus();
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String s) {
-                //search(s);
                 delayedExecutor.update(s);
                 return false;
             }
         });
     }
 
+    public boolean hasNecessaryPermissions() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public void requestNecessaryPermissions() {
+        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_CONTACTS, Manifest.permission.GET_ACCOUNTS}, 10);
+    }
+
+    public void initPaging() {
+        Disposable singleDisposable = contactViewModel
+                .getContactPageDataFlowable()
+                .observeOn(Schedulers.computation())
+                .subscribe((pagingDataFlowable)->{
+                    Disposable flowableDisposable = pagingDataFlowable
+                            .subscribe((pagingData) -> {
+                                contactAdapter.submitData(this.getLifecycle(), pagingData);
+                            });
+                    compositeDisposable.add(flowableDisposable);
+                });
+        compositeDisposable.add(singleDisposable);
+    }
+
     public void initializeViews() {
-        msgBox = findViewById(R.id.MsgBox);
         searchView = findViewById(R.id.searchView);
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -139,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         if (permissions.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 && grantResults[1] == PackageManager.PERMISSION_GRANTED)
-            loadContacts();
+            initPaging();
         else
             this.finish();
     }
@@ -151,65 +156,6 @@ public class MainActivity extends AppCompatActivity {
     public void search(String key) {
         contactViewModel.setSearchText(key);
         contactAdapter.refresh();
-    }
-
-    public void loadContacts() {
-        if (
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-                == PackageManager.PERMISSION_DENIED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS)
-                == PackageManager.PERMISSION_DENIED
-        ) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_CONTACTS, Manifest.permission.GET_ACCOUNTS}, 10);
-            return;
-        }
-        final AccountManager accountManager = AccountManager.get(this);
-        msgBox.setVisibility(View.VISIBLE);
-        searchView.setEnabled(false);
-        recyclerView.setVisibility(View.INVISIBLE);
-        new Thread() {
-            @Override
-            public void run() {
-                String selection = null;
-                Account[] accounts = accountManager.getAccounts();
-                if (accounts.length != 0) {
-                    StringBuilder selectionBuilder = new StringBuilder();
-                    selectionBuilder
-                            .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET)
-                            .append("!='")
-                            .append(accounts[0].type)
-                            .append("'");
-                    for (int i = 1; i < accounts.length; i++) {
-                        selectionBuilder
-                                .append(" AND ")
-                                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET)
-                                .append("!='")
-                                .append(accounts[i].type)
-                                .append("'");
-                    }
-                    selection = selectionBuilder.toString();
-                }
-                Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        null, selection, null,
-                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC");
-                ArrayList<Contact> contact_data = new ArrayList();
-                while (cursor.moveToNext()) {
-                    @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                    @SuppressLint("Range") String num = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    @SuppressLint("Range") String pfp_uri = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
-                    @SuppressLint("Range") String contact_id = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
-                    contact_data.add(new Contact(name, num, pfp_uri, contact_id));
-                }
-                cursor.close();
-                allContacts = contact_data;
-                runOnUiThread(() -> {
-                    msgBox.setVisibility(View.INVISIBLE);
-                    searchView.setEnabled(true);
-                    recyclerView.setVisibility(View.VISIBLE);
-                });
-            }
-        }.start();
-
     }
 
     @Override
